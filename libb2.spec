@@ -38,6 +38,8 @@ Development files and headers for BLAKE2.
 %autosetup -p1
 
 %build
+export CC=gcc
+export CXX=g++
 autoreconf -vfi
 %configure \
 	--disable-static \
