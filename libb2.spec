@@ -1,11 +1,17 @@
-%global major	1
-%global libname	%mklibname b 2 %{major}
-%global devname	%mklibname b 2 -d
+%global major 1
+%global libname %mklibname b 2 %{major}
+%global devname %mklibname b 2 -d
+
+%ifarch %{riscv}
+%bcond_with pgo
+%else
+%bcond_without pgo
+%endif
 
 Name:		libb2
 Summary:	C library providing BLAKE2b, BLAKE2s, BLAKE2bp, BLAKE2sp
 Version:	0.98.1
-Release:	1
+Release:	2
 License:	CC0
 Group:		Development/C
 Url:		https://blake2.net/
@@ -36,15 +42,40 @@ Development files and headers for BLAKE2.
 
 %prep
 %autosetup -p1
+	
 
 %build
-export CC=gcc
-export CXX=g++
+sed -e 's|CFLAGS=-O3|CFLAGS="%{optflags}"|g' -i configure.ac
 autoreconf -vfi
+
+%if %{with pgo}
+CFLAGS="%{optflags} -fprofile-instr-generate" \
+CXXFLAGS="%{optflags} -fprofile-instr-generate" \
+LDFLAGS="%{build_ldflags} -fprofile-instr-generate" \
 %configure \
 	--disable-static \
 	--disable-native
-%make_build CFLAGS="%{optflags}"
+	
+%make_build
+
+export LLVM_PROFILE_FILE=libpng-%p.profile.d
+make check
+unset LD_LIBRARY_PATH
+unset LLVM_PROFILE_FILE
+llvm-profdata merge --output=libpng.profile *.profile.d
+rm -f *.profile.d
+
+make clean
+
+CFLAGS="%{optflags} -fprofile-instr-use=$(realpath libpng.profile)" \
+CXXFLAGS="%{optflags} -fprofile-instr-use=$(realpath libpng.profile)" \
+LDFLAGS="%{build_ldflags} -fprofile-instr-use=$(realpath libpng.profile)" \
+%endif
+%configure \
+	--disable-static \
+	--disable-native
+	
+%make_build
 
 %install
 %make_install
