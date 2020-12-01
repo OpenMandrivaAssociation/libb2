@@ -58,11 +58,11 @@ LDFLAGS="%{build_ldflags} -fprofile-instr-generate" \
 	
 %make_build
 
-export LLVM_PROFILE_FILE=libpng-%p.profile.d
+export LLVM_PROFILE_FILE=%{name}-%p.profile.d
 make check
 unset LD_LIBRARY_PATH
 unset LLVM_PROFILE_FILE
-llvm-profdata merge --output=libpng.profile *.profile.d
+llvm-profdata merge --output=%{name}.profile *.profile.d
 rm -f *.profile.d
 
 make clean
