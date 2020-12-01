@@ -2,11 +2,7 @@
 %global libname %mklibname b 2 %{major}
 %global devname %mklibname b 2 -d
 
-%ifarch %{riscv}
-%bcond_with pgo
-%else
-%bcond_without pgo
-%endif
+%global optflags %{optflags} -O3
 
 Name:		libb2
 Summary:	C library providing BLAKE2b, BLAKE2s, BLAKE2bp, BLAKE2sp
@@ -42,39 +38,15 @@ Development files and headers for BLAKE2.
 
 %prep
 %autosetup -p1
-	
 
 %build
 sed -e 's|CFLAGS=-O3|CFLAGS="%{optflags}"|g' -i configure.ac
 autoreconf -vfi
 
-%if %{with pgo}
-CFLAGS="%{optflags} -fprofile-instr-generate" \
-CXXFLAGS="%{optflags} -fprofile-instr-generate" \
-LDFLAGS="%{build_ldflags} -fprofile-instr-generate" \
 %configure \
 	--disable-static \
 	--disable-native
-	
-%make_build
 
-export LLVM_PROFILE_FILE=%{name}-%p.profile.d
-make check
-unset LD_LIBRARY_PATH
-unset LLVM_PROFILE_FILE
-llvm-profdata merge --output=%{name}.profile *.profile.d
-rm -f *.profile.d
-
-make clean
-
-CFLAGS="%{optflags} -fprofile-instr-use=$(realpath libpng.profile)" \
-CXXFLAGS="%{optflags} -fprofile-instr-use=$(realpath libpng.profile)" \
-LDFLAGS="%{build_ldflags} -fprofile-instr-use=$(realpath libpng.profile)" \
-%endif
-%configure \
-	--disable-static \
-	--disable-native
-	
 %make_build
 
 %install
@@ -84,13 +56,13 @@ LDFLAGS="%{build_ldflags} -fprofile-instr-use=$(realpath libpng.profile)" \
 find %{buildroot} -name "*.la" -delete
 
 %check
-%make_build check CFLAGS="%{optflags}"
+%make_build check
 
 %files -n %{libname}
-%license COPYING
 %{_libdir}/libb2.so.%{major}{,.*}
 
 %files -n %{devname}
+%license COPYING
 %{_includedir}/blake2.h
 %{_libdir}/libb2.so
 %{_libdir}/pkgconfig/libb2.pc
