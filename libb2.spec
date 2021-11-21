@@ -4,10 +4,13 @@
 
 %global optflags %{optflags} -O3
 
-Name:		libb2
+# (tpg) enable PGO build
+%bcond_without pgo
+
 Summary:	C library providing BLAKE2b, BLAKE2s, BLAKE2bp, BLAKE2sp
+Name:		libb2
 Version:	0.98.1
-Release:	2
+Release:	3
 License:	CC0
 Group:		Development/C
 Url:		https://blake2.net/
@@ -39,10 +42,35 @@ Development files and headers for BLAKE2.
 %prep
 %autosetup -p1
 
-%build
 sed -e 's|CFLAGS=-O3|CFLAGS="%{optflags}"|g' -i configure.ac
 autoreconf -vfi
 
+%build
+
+%if %{with pgo}
+export LD_LIBRARY_PATH="$(pwd)"
+
+CFLAGS="%{optflags} -fprofile-generate" \
+CXXFLAGS="%{optflags} -fprofile-generate" \
+LDFLAGS="%{build_ldflags} -fprofile-generate" \
+%configure \
+	--disable-static \
+	--disable-native
+
+%make_build
+
+make check
+
+unset LD_LIBRARY_PATH
+llvm-profdata merge --output=%{name}-llvm.profdata *.profraw
+PROFDATA="$(realpath %{name}-llvm.profdata)"
+rm -f *.profraw
+make clean
+
+CFLAGS="%{optflags} -fprofile-use=$PROFDATA" \
+CXXFLAGS="%{optflags} -fprofile-use=$PROFDATA" \
+LDFLAGS="%{build_ldflags} -fprofile-use=$PROFDATA" \
+%endif
 %configure \
 	--disable-static \
 	--disable-native
