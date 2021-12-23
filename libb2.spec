@@ -10,7 +10,7 @@
 Summary:	C library providing BLAKE2b, BLAKE2s, BLAKE2bp, BLAKE2sp
 Name:		libb2
 Version:	0.98.1
-Release:	3
+Release:	4
 License:	CC0
 Group:		Development/C
 Url:		https://blake2.net/
@@ -62,7 +62,7 @@ LDFLAGS="%{build_ldflags} -fprofile-generate" \
 make check
 
 unset LD_LIBRARY_PATH
-llvm-profdata merge --output=%{name}-llvm.profdata *.profraw
+llvm-profdata merge --output=%{name}-llvm.profdata $(find . -name "*.profraw" -type f)
 PROFDATA="$(realpath %{name}-llvm.profdata)"
 rm -f *.profraw
 make clean
