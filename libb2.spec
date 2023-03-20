@@ -10,7 +10,7 @@
 Summary:	C library providing BLAKE2b, BLAKE2s, BLAKE2bp, BLAKE2sp
 Name:		libb2
 Version:	0.98.1
-Release:	5
+Release:	6
 License:	CC0
 Group:		Development/C
 Url:		https://blake2.net/
@@ -55,8 +55,7 @@ CXXFLAGS="%{optflags} -fprofile-generate" \
 LDFLAGS="%{build_ldflags} -fprofile-generate" \
 %configure \
 	--disable-static \
-	--disable-native \
-	--disable-openmp
+	--disable-native
 
 %make_build
 
@@ -74,16 +73,12 @@ LDFLAGS="%{build_ldflags} -fprofile-use=$PROFDATA" \
 %endif
 %configure \
 	--disable-static \
-	--disable-native \
-	--disable-openmp
+	--disable-native
 
 %make_build
 
 %install
 %make_install
-
-# we don't want these
-find %{buildroot} -name "*.la" -delete
 
 %check
 %make_build check
