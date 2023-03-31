@@ -10,7 +10,7 @@
 Summary:	C library providing BLAKE2b, BLAKE2s, BLAKE2bp, BLAKE2sp
 Name:		libb2
 Version:	0.98.1
-Release:	6
+Release:	7
 License:	CC0
 Group:		Development/C
 Url:		https://blake2.net/
