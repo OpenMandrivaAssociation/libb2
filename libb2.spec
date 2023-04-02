@@ -5,7 +5,11 @@
 %global optflags %{optflags} -O3
 
 # (tpg) enable PGO build
+%if %{cross_compiling}
+%bcond_with pgo
+%else
 %bcond_without pgo
+%endif
 
 Summary:	C library providing BLAKE2b, BLAKE2s, BLAKE2bp, BLAKE2sp
 Name:		libb2
@@ -80,8 +84,10 @@ LDFLAGS="%{build_ldflags} -fprofile-use=$PROFDATA" \
 %install
 %make_install
 
+%if ! %{cross_compiling}
 %check
 %make_build check
+%endif
 
 %files -n %{libname}
 %{_libdir}/libb2.so.%{major}{,.*}
