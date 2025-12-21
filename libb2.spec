@@ -19,6 +19,10 @@ License:	CC0
 Group:		Development/C
 Url:		https://blake2.net/
 Source0:	https://github.com/BLAKE2/libb2/releases/download/v%{version}/libb2-%{version}.tar.gz
+BuildRequires:	automake
+BuildRequires:	libtool-base
+BuildRequires:	slibtool
+BuildRequires:	make
 BuildRequires:	autoconf-archive
 
 %description
